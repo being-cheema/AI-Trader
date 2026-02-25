@@ -6,3 +6,6 @@ fastmcp==2.12.5
 # A_stock
 tushare
 efinance
+
+# India stock
+yfinance
