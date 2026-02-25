@@ -96,6 +96,8 @@ def buy(symbol: str, amount: int) -> Dict[str, Any]:
     # Auto-detect market type based on symbol format
     if symbol.endswith((".SH", ".SZ")):
         market = "cn"
+    elif symbol.endswith((".NS", ".BO")):
+        market = "in"
     else:
         market = "us"
 
@@ -306,6 +308,8 @@ def sell(symbol: str, amount: int) -> Dict[str, Any]:
     # Auto-detect market type based on symbol format
     if symbol.endswith((".SH", ".SZ")):
         market = "cn"
+    elif symbol.endswith((".NS", ".BO")):
+        market = "in"
     else:
         market = "us"
 
@@ -374,8 +378,9 @@ def sell(symbol: str, amount: int) -> Dict[str, Any]:
             "date": today_date,
         }
 
-    # 🇨🇳 Chinese A-shares T+1 trading rule: Cannot sell shares bought on the same day
-    if market == "cn":
+    # 🇨🇳 Chinese A-shares T+1 trading rule / 🇮🇳 Indian market T+1 rule:
+    # Cannot sell shares bought on the same day
+    if market in ("cn", "in"):
         bought_today = _get_today_buy_amount(symbol, today_date, signature)
         if bought_today > 0:
             # Calculate sellable quantity (total position - bought today)

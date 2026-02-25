@@ -33,6 +33,10 @@ AGENT_REGISTRY = {
     "BaseAgentCrypto": {
         "module": "agent.base_agent_crypto.base_agent_crypto",
         "class": "BaseAgentCrypto"
+    },
+    "BaseAgentIndiaStock": {
+        "module": "agent.base_agent_india_stock.base_agent_india_stock",
+        "class": "BaseAgentIndiaStock"
     }
 }
 
@@ -130,11 +134,15 @@ async def main(config_path=None):
         market = "cn"
     elif agent_type == "BaseAgentCrypto":
         market = "crypto"
+    elif agent_type == "BaseAgentIndiaStock":
+        market = "in"
 
     if market == "crypto":
         print(f"🌍 Market type: Cryptocurrency (24/7 trading)")
     elif market == "cn":
         print(f"🌍 Market type: A-shares (China)")
+    elif market == "in":
+        print(f"🌍 Market type: Indian stocks (NSE/BSE)")
     else:
         print(f"🌍 Market type: US stocks")
 
@@ -244,6 +252,8 @@ async def main(config_path=None):
             stock_symbols = None  # Crypto agent uses its own crypto_symbols
         elif agent_type == "BaseAgentAStock" or agent_type == "BaseAgentAStock_Hour":
             stock_symbols = None  # Let BaseAgentAStock use its default SSE 50
+        elif agent_type == "BaseAgentIndiaStock":
+            stock_symbols = None  # Let BaseAgentIndiaStock use its default Nifty 50
         elif market == "cn":
             from prompts.agent_prompt import all_sse_50_symbols
 
@@ -297,6 +307,8 @@ async def main(config_path=None):
                 currency_symbol = "USDT"
             elif agent.market == "cn":
                 currency_symbol = "¥"
+            elif agent.market == "in":
+                currency_symbol = "₹"
             else:
                 currency_symbol = "$"
             print(f"📊 Final position summary:")

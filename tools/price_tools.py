@@ -48,15 +48,15 @@ def get_market_type() -> str:
     """
     智能获取市场类型，支持多种检测方式：
     1. 优先从配置中读取 MARKET
-    2. 如果未设置，则根据 LOG_PATH 推断（agent_data_astock -> cn, agent_data_crypto -> crypto, agent_data -> us）
+    2. 如果未设置，则根据 LOG_PATH 推断（agent_data_astock -> cn, agent_data_crypto -> crypto, agent_data_india_stock -> in, agent_data -> us）
     3. 最后默认为 us
 
     Returns:
-        "cn" for A-shares market, "us" for US market, "crypto" for cryptocurrency market
+        "cn" for A-shares market, "us" for US market, "crypto" for cryptocurrency market, "in" for Indian market
     """
     # 方式1: 从配置读取
     market = get_config_value("MARKET", None)
-    if market in ["cn", "us", "crypto"]:
+    if market in ["cn", "us", "crypto", "in"]:
         return market
 
     # 方式2: 根据 LOG_PATH 推断
@@ -65,6 +65,8 @@ def get_market_type() -> str:
         return "cn"
     elif "crypto" in log_path.lower():
         return "crypto"
+    elif "india" in log_path.lower() or "india_stock" in log_path.lower():
+        return "in"
 
     # 方式3: 默认为美股
     return "us"
@@ -232,7 +234,8 @@ def get_merged_file_path(market: str = "us") -> Path:
     """Get merged.jsonl path based on market type.
 
     Args:
-        market: Market type, "us" for US stocks, "cn" for A-shares, "crypto" for cryptocurrencies
+        market: Market type, "us" for US stocks, "cn" for A-shares, "crypto" for cryptocurrencies,
+                "in" for Indian stocks (NSE/BSE)
 
     Returns:
         Path object pointing to the merged.jsonl file
@@ -242,6 +245,8 @@ def get_merged_file_path(market: str = "us") -> Path:
         return base_dir / "data" / "A_stock" / "merged.jsonl"
     elif market == "crypto":
         return base_dir / "data" / "crypto" / "crypto_merged.jsonl"
+    elif market == "in":
+        return base_dir / "data" / "india_stock" / "merged.jsonl"
     else:
         return base_dir / "data" / "merged.jsonl"
 
@@ -405,13 +410,14 @@ def format_price_dict_with_names(
 
     Args:
         price_dict: Original price dictionary with keys like "600519.SH_price"
-        market: Market type ("us" or "cn")
+        market: Market type ("us", "cn", or "in")
 
     Returns:
         New dictionary with keys like "600519.SH (贵州茅台)_price" for CN market,
+        "RELIANCE.NS (Reliance Industries)_price" for IN market,
         unchanged for US market
     """
-    if market != "cn":
+    if market not in ("cn", "in"):
         return price_dict
 
     name_map = get_stock_name_mapping(market)
